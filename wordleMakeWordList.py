@@ -1,4 +1,4 @@
-# From an input dictionary, create a new dictionary of words of the desired number of lette
+# From an input dictionary, create a word list whose entries have the desired number of letters
 
 nLetters = 5
 

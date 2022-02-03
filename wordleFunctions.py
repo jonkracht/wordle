@@ -1,5 +1,5 @@
 def printBanner(text):
-    ''''''
+    '''Standardized means of printing information to stdout.'''
 
     bannerMarker = '*'
     bannerWidth = 80
@@ -16,8 +16,18 @@ def printBanner(text):
     return()
 
 
+def displayIntroduction():
+    ''''''
+    printBanner('Wordle Solver')
+    print('When a word is guessed, the guess is evaluated and each letter of the guess is shaded in either yellow, green, or grey.')
+    print('These colors indicate to what degree each letter appears in the solution word.')
+    print('\nIn this solver, the following encoding is used: \ngreen is 2, yellow is 1, and grey is 0')
+
+    return
+
+
 def loadWordList():
-    '''Load a list of words'''
+    '''Load a list of words over which solving occurs.'''
 
     with open('wordleWordList.txt', 'r') as open_file:
         wordList = open_file.read().split()
@@ -50,9 +60,15 @@ def scoreGuess(guess, answer):
 
 
 def queryUser():
+    '''Grabs the user's guess and score of guess.'''
 
-    guess = str(input('Wordle guess: ')).lower()
-    score = input('Score: ')
+    guess = str(input('Word guessed (or \'q\' to quit): ')).lower()
+
+    if guess == 'q':
+        printBanner('Exiting Wordle Solver.  Byeee.')
+        exit()
+
+    score = input('Score of the guess: ')
 
     score = [int(a) for a in list(score)]
 
@@ -60,7 +76,7 @@ def queryUser():
 
 
 def refineWordList(wordList, guess, score):
-    '''Remove entries in a word list which do not mach guess/score.'''
+    '''Remove entries of a word list which do not mach guess/score.'''
 
     newWordList = [w for w in wordList if scoreGuess(guess, w) == score]
 
@@ -90,19 +106,53 @@ def nextGuessHelper():
     '''Provide candidate next guesses based on letters input by user.'''
 
     printBanner('Helper for next guess')
-
+    print('\nEnter letters (or \'c\' to continue to next guess):')
     while True:
-        letters = input('\nEnter letters (or \'c\' to continue): ')
+        letters = input('> ')
         if letters == 'c':
             break
         else:
             newList = wordsContainLetters(loadWordList(), letters)
-            print(f'{len(newList)} words contain these letters: ', newList)
+            print(f'{len(newList)} words contain these letters: \n', newList)
 
     return
 
 
+def letterCount(wordlist):
+    '''Given a list of words, compute letter frequency'''
+
+    from collections import Counter, OrderedDict
+
+    letterCount = Counter(''.join(wordlist))
+
+    return OrderedDict(letterCount.most_common())
+
+
+def updateKnownLetters(guess, score, placedList, unplacedList):
+    '''Monkies'''
+
+    guessList, scoreList = list(guess), list(score)
+
+    remainingLetters = list(guess)
+
+    # Check for exact matches
+    for i in range(len(guessList)):
+        if scoreList[i] == 2:
+            placedList[i] = guessList[i]
+            remainingLetters.remove(guessList[i])
+
+    # Check for inexact matches
+    for i in range(len(guessList)):
+        if scoreList[i] == 1 and guessList[i] in remainingLetters:
+            unplacedList.append(guessList[i])
+            remainingLetters.remove(guessList[i])
+
+    return placedList, unplacedList
+
+
 if __name__ == '__main__':
+
+    # Some sample function calls to test functionality
 
     #print(scoreGuess('lymph', 'crimp'))
 
@@ -113,6 +163,8 @@ if __name__ == '__main__':
 
     #print(wordsContainLetters(loadWordList(), 'bhm'))
 
-    nextGuessHelper()
+    #nextGuessHelper()
+
+    print(letterCount(['cat', 'cot']))
 
     print('Finished')
