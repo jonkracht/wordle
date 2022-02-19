@@ -17,11 +17,19 @@ def printBanner(text):
 
 
 def displayIntroduction():
-    ''''''
+    '''Prints explanation of Wordle and this solver.'''
+
     printBanner('Wordle Solver')
-    print('When a word is guessed, the guess is evaluated and each letter of the guess is shaded in either yellow, green, or grey.')
-    print('These colors indicate to what degree each letter appears in the solution word.')
-    print('\nIn this solver, the following encoding is used: \ngreen is 2, yellow is 1, and grey is 0')
+
+    print('\nEncoding scheme:')
+    print(f"{'Match type':<25} {'Color':<20}{'Encoding'}")
+    print(f"{'----------':<25} {'-----':<20}{'--------'}")
+    print(f"{'Exact':<25} {'Green':<20}{'2'}")
+    print(f"{'Inexact':<25} {'Yellow':<20}{'1'}")
+    print(f"{'No match':<25} {'Gray':<20}{'0'}")
+
+    print('\nExample:  \nIf the letters of a guess are colored (yellow, green, gray, gray, yellow),')
+    print('the score to input into the solver should be \'12001\'.')
 
     return
 
@@ -37,20 +45,20 @@ def loadWordList():
 
 def scoreGuess(guess, answer):
     '''Return a Wordle score for an input guessed word and answer.
-    Encoding is exact match is '2', inexact match is '1' and miss is '0'.'''
+    Encoding: exact match is scored as '2', inexact match is '1', and miss is '0'.'''
 
-    guessList, answerList = list(guess), list (answer)
+    guessList, answerList = list(guess), list(answer)
     remainingAnswerLetters = list(answer)
 
     score = len(guessList) * [0]
 
-    # Check for exact matches
+    # Find exact matches
     for i in range(len(guessList)):
         if guess[i] == answer[i]:
             score[i] = 2
             remainingAnswerLetters.remove(guess[i])
 
-    # Check for inexact matches
+    # Find inexact matches
     for i in range(len(guessList)):
         if score[i] != 2 and guessList[i] in remainingAnswerLetters:
             score[i] = 1
@@ -60,34 +68,46 @@ def scoreGuess(guess, answer):
 
 
 def queryUser():
-    '''Grabs the user's guess and score of guess.'''
+    '''Input guessed word and score.  Enforce proper input type.'''
 
-    guess = str(input('Word guessed (or \'q\' to quit): ')).lower()
+    # Input word guessed
+    while True:
+        guess = str(input('\nWord guessed (or \'q\' to quit):\n>> ')).lower()
 
-    if guess == 'q':
-        printBanner('Exiting Wordle Solver.  Byeee.')
-        exit()
+        if guess == 'q':
+            printBanner('Exiting Wordle Solver.  Byeee.')
+            exit()
 
-    score = input('Score of the guess: ')
+        # Verify guess is of the appropriate form (5 letters)
+        if len(list(guess)) == 5:
+            break
 
-    score = [int(a) for a in list(score)]
+        print('Incorrect number of letters.  Try again.')
+
+    # Input score:  Check input length and either 0, 1, 2
+    while True:
+        score = input('Score of the guess:\n>> ')
+
+        score = [int(a) for a in list(score)]  # convert string to list
+
+        if len(score) == 5 and False not in [x in [0, 1, 2] for x in score]:
+            break
+
+        print('\nNot a possible Wordle score.  Try again.')
 
     return guess, score
 
 
 def refineWordList(wordList, guess, score):
-    '''Remove entries of a word list which do not mach guess/score.'''
+    '''Remove entries of a word list which would not produce a deisred score for a guessed word.'''
 
-    newWordList = [w for w in wordList if scoreGuess(guess, w) == score]
-
-    return newWordList
+    return [w for w in wordList if scoreGuess(guess, w) == score]
 
 
 def wordsContainLetters(wordList, letters):
-    '''Returns words who contain desired letters.'''
+    '''Returns words in wordList that contain desired letters.'''
 
     newList = []
-
     letters = list(letters)
 
     for word in wordList:
@@ -103,17 +123,19 @@ def wordsContainLetters(wordList, letters):
 
 
 def nextGuessHelper():
-    '''Provide candidate next guesses based on letters input by user.'''
+    '''For a set of letters input by user, provide candidate words for next guess.'''
 
-    printBanner('Helper for next guess')
+    printBanner('Next Guess Helper')
     print('\nEnter letters (or \'c\' to continue to next guess):')
+
     while True:
         letters = input('> ')
         if letters == 'c':
             break
         else:
             newList = wordsContainLetters(loadWordList(), letters)
-            print(f'{len(newList)} words contain these letters: \n', newList)
+            print(f'\n{len(newList)} possible words from the letters \'{letters}\': \n')
+            printWordList(newList)
 
     return
 
@@ -150,6 +172,29 @@ def updateKnownLetters(guess, score, placedList, unplacedList):
     return placedList, unplacedList
 
 
+def printWordList(wordList):
+    ''''''
+
+    width, gap = 10, 3
+
+    while len(wordList) > 0:
+        string = ''
+
+        if len(wordList) >= width:
+            temp = wordList[:width]
+        else:
+            temp = wordList
+
+        for t in temp:
+            string += t + gap * ' '
+
+        print(string)
+
+        wordList = wordList[width:]
+
+    return
+
+
 if __name__ == '__main__':
 
     # Some sample function calls to test functionality
@@ -165,6 +210,7 @@ if __name__ == '__main__':
 
     #nextGuessHelper()
 
-    print(letterCount(['cat', 'cot']))
+    #print(letterCount(['cat', 'cot']))
 
+    displayIntroduction()
     print('Finished')

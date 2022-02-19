@@ -23,19 +23,32 @@ def main():
 
         if len(wordList) == 0:
             # Handle case of all words eliminated
-            print('No words match all input information.  Probably data entry error.  Please try again.')
+            print('No words match all criteria.  Likely data entry error.  Please try again.')
             exit()
         elif len(wordList) == 1:
-            print(f'Solution to the Wordle is: \'{wordList[0].upper()}\'!')
+            print(f'\nSolution is:  \'{wordList[0].upper()}\'')
             exit()
         else:
-            print(f'Placed letters in solution: {placedLetters}\n{unplacedLetters} remain to be placed')
-            print(f'\n{len(wordList)} words remain as potential solutions:')
-            print(wordList)
+            print(f"\n{'Placed letters:':<25}{placedLetters}")
+            print(f"{'Unplaced letters:':<25}{unplacedLetters}")
+
+            print(f'\n{len(wordList)} words remain as potential solutions:\n')
+            wf.printWordList(wordList)
 
             letterCount = wf.letterCount(wordList)
             print(f'\nLetter counts of these words:\n{letterCount}')
-            print(f'Top five letters neither placed nor unplaced:  {list(letterCount.keys())[0:5]}')
+
+            temp = []
+            for key, val in letterCount.items():
+                if key not in unplacedLetters and key not in placedLetters:
+                    temp.append(key)
+                    if len(temp) > 4:
+                        break
+
+            print(f'\nTop five letters neither placed nor unplaced:')
+            wf.printWordList(temp)
+
+
 
             wf.nextGuessHelper()
 
